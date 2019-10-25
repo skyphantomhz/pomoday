@@ -36,9 +36,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+  MainBloc bloc;
+  var inputController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    bloc = BlocProvider.of<MainBloc>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -50,15 +52,22 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: Text("Hello world!"),
             ),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Enter anything here...',
-                fillColor: Colors.black12,
-                contentPadding: EdgeInsets.fromLTRB(12.0, 20.0, 12.0, 12.0)
-              ),
-              onSubmitted: (str) {
-                  
-              },
+            StreamBuilder<String>(
+              stream: bloc.input,
+              builder: (context, snapshot) {
+                inputController.text = snapshot.data;
+                return TextField(
+                  controller: inputController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter anything here...',
+                    fillColor: Colors.black12,
+                    contentPadding: EdgeInsets.fromLTRB(12.0, 20.0, 12.0, 12.0)
+                  ),
+                  onSubmitted: (str) {
+                      bloc.parserCommand(str);
+                  },
+                );
+              }
             )
           ],
         ),
