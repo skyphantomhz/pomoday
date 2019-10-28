@@ -12,25 +12,74 @@ class MainBloc extends Bloc {
 
   @override
   void dispose() {
-    // _city.close();
+    _input.close();
   }
 
   void parserCommand(String str) {
     if(parseTaskCommand(str)){
+      print("```````````````````````````Marching parseTaskCommand");
+      _input.sink.add("");
+      return;
+    }
+
+    if(parseCheckCommand(str)){
+      print("```````````````````````````Marching parseCheckCommand");
+      _input.sink.add("");
+      return;
+    }
+
+    if(parseBeginCommand(str)){
+      print("```````````````````````````Marching parseBeginCommand");
+      _input.sink.add("");
+      return;
+    }
+
+    if(parseDeleteCommand(str)){
+      print("```````````````````````````Marching parseDeleteCommand");
+      _input.sink.add("");
+      return;
+    }
+
+    if(parseHelpCommand(str)){
+      print("```````````````````````````Marching parseHelpCommand");
       _input.sink.add("");
       return;
     }
   }
 
   var regTask = new RegExp(
-    "/(t(?:ask)?)\s(@(?:\S*['-]?)(?:[0-9a-zA-Z'-]+))?(.*)/",
+    r"^(t(?:ask)?)\s(@(?:\S*['-]?)(?:[0-9a-zA-Z'-]+))?(.*)",
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  var regCheck = new RegExp(
+    r"^(c(?:heck)?)\s(\d+)",
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  var regBegin = new RegExp(
+    r"^(b(?:egin)?)\s(\d+)",
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  var regDelete = new RegExp(
+    r"^(d(?:elete)?)\s(\d+)",
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  var regHelp = new RegExp(
+    r"^(close-help|help)",
     caseSensitive: false,
     multiLine: false,
   );
 
   bool parseTaskCommand(String str) => regTask.hasMatch(str);
-  // var parseCheckCommand = (String str) => str.match(/(c(?:heck)?)\s(\d+)/);
-  // var parseBeginCommand = (String str) => str.match(/(b(?:egin)?)\s(\d+)/);
-  // var parseDeleteCommand = (String str) => str.match(/(d(?:elete)?)\s(\d+)/);
-  // var parseHelpCommand = (String str) => str.match(/(close-help|help)/);
+  bool parseCheckCommand(String str) => regCheck.hasMatch(str);
+  bool parseBeginCommand(String str) => regBegin.hasMatch(str);
+  bool parseDeleteCommand(String str) => regDelete.hasMatch(str);
+  bool parseHelpCommand(String str) => regHelp.hasMatch(str);
 }
