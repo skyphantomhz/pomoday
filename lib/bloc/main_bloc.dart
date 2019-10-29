@@ -1,50 +1,75 @@
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:pomoday/model/task.dart';
 import 'package:rxdart/rxdart.dart';
 
 class MainBloc extends Bloc {
   PublishSubject<String> _input = PublishSubject<String>();
   Observable<String> get input => _input.stream;
 
-  void fetchData() async {
-    // final response = await service.fetchData();
-    // _city.sink.add(response);
-  }
+  BehaviorSubject<List<Task>> _tasks = BehaviorSubject<List<Task>>();
+  Observable<List<Task>> get tasks => _tasks.stream;
 
   @override
   void dispose() {
     _input.close();
+    _tasks.close();
   }
 
   void parserCommand(String str) {
-    if(parseTaskCommand(str)){
-      print("```````````````````````````Marching parseTaskCommand");
+    if (regTask.hasMatch(str)) {
       _input.sink.add("");
+      print("parserCommand");
+      _addTask(parseTaskCommand(str));
       return;
     }
 
-    if(parseCheckCommand(str)){
-      print("```````````````````````````Marching parseCheckCommand");
+    if (regCheck.hasMatch(str)) {
       _input.sink.add("");
+      print("parseCheckCommand");
       return;
     }
 
-    if(parseBeginCommand(str)){
-      print("```````````````````````````Marching parseBeginCommand");
+    if (regBegin.hasMatch(str)) {
       _input.sink.add("");
+      print("parseBeginCommand");
       return;
     }
 
-    if(parseDeleteCommand(str)){
-      print("```````````````````````````Marching parseDeleteCommand");
+    if (regDelete.hasMatch(str)) {
       _input.sink.add("");
+      print("parseDeleteCommand");
       return;
     }
 
-    if(parseHelpCommand(str)){
-      print("```````````````````````````Marching parseHelpCommand");
+    if (regHelp.hasMatch(str)) {
       _input.sink.add("");
+      print("parseHelpCommand");
       return;
     }
+  }
+
+  void _addTask(Iterable<RegExpMatch> matchTask) {
+    var tempTasks = List<Task>();
+    if (_tasks.hasValue) {
+      tempTasks = _tasks.value;
+    }
+
+    var currentMilliseconds = DateTime.now().millisecondsSinceEpoch;
+    var matching = matchTask.elementAt(0);
+    var task = Task(
+        id: tempTasks.length,
+        header: matching?.group(2)??"",
+        name: matching?.group(3)?.trim()??"",
+        createDate: currentMilliseconds,
+        startDate: 0,
+        endDate: 0);
+    tempTasks.add(task);
+    prepareData(tempTasks);
+  }
+
+  void prepareData(List<Task> newTasks) {
+    newTasks.sort((a, b) => a.header.compareTo(b.header)*-1);
+    _tasks.sink.add(newTasks);
   }
 
   var regTask = new RegExp(
@@ -77,9 +102,9 @@ class MainBloc extends Bloc {
     multiLine: false,
   );
 
-  bool parseTaskCommand(String str) => regTask.hasMatch(str);
-  bool parseCheckCommand(String str) => regCheck.hasMatch(str);
-  bool parseBeginCommand(String str) => regBegin.hasMatch(str);
-  bool parseDeleteCommand(String str) => regDelete.hasMatch(str);
-  bool parseHelpCommand(String str) => regHelp.hasMatch(str);
+  Iterable<RegExpMatch> parseTaskCommand(String str) => regTask.allMatches(str);
+  Iterable<RegExpMatch> parseCheckCommand(String str) => regCheck.allMatches(str);
+  Iterable<RegExpMatch> parseBeginCommand(String str) => regBegin.allMatches(str);
+  Iterable<RegExpMatch> parseDeleteCommand(String str) => regDelete.allMatches(str);
+  Iterable<RegExpMatch> parseHelpCommand(String str) => regHelp.allMatches(str);
 }
