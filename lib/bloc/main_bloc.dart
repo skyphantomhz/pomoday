@@ -18,26 +18,7 @@ class MainBloc extends Bloc {
   void parserCommand(String str) {
     if (regTask.hasMatch(str)) {
       _input.sink.add("");
-      print("parserCommand");
       _addTask(parseTaskCommand(str));
-      return;
-    }
-
-    if (regCheck.hasMatch(str)) {
-      _input.sink.add("");
-      print("parseCheckCommand");
-      return;
-    }
-
-    if (regBegin.hasMatch(str)) {
-      _input.sink.add("");
-      print("parseBeginCommand");
-      return;
-    }
-
-    if (regDelete.hasMatch(str)) {
-      _input.sink.add("");
-      print("parseDeleteCommand");
       return;
     }
 
@@ -46,20 +27,41 @@ class MainBloc extends Bloc {
       print("parseHelpCommand");
       return;
     }
+
+    if (!_tasks.hasValue) {
+      return;
+    }
+
+    if (regCheck.hasMatch(str)) {
+      _input.sink.add("");
+      _updateTask(parseCheckCommand(str), TaskStatus.DONE);
+      return;
+    }
+
+    if (regBegin.hasMatch(str)) {
+      _input.sink.add("");
+      _updateTask(parseBeginCommand(str), TaskStatus.PROCESS);
+      return;
+    }
+
+    if (regDelete.hasMatch(str)) {
+      _input.sink.add("");
+      _deleteTask(parseDeleteCommand(str));
+      return;
+    }
   }
 
-  void _addTask(Iterable<RegExpMatch> matchTask) {
+  void _addTask(RegExpMatch matchTask) {
     var tempTasks = List<Task>();
     if (_tasks.hasValue) {
       tempTasks = _tasks.value;
     }
 
     var currentMilliseconds = DateTime.now().millisecondsSinceEpoch;
-    var matching = matchTask.elementAt(0);
     var task = Task(
         id: tempTasks.length,
-        header: matching?.group(2)??"",
-        name: matching?.group(3)?.trim()??"",
+        header: matchTask?.group(2) ?? "",
+        name: matchTask?.group(3)?.trim() ?? "",
         createDate: currentMilliseconds,
         startDate: 0,
         endDate: 0);
@@ -67,25 +69,45 @@ class MainBloc extends Bloc {
     prepareData(tempTasks);
   }
 
+  _updateTask(RegExpMatch matchTask, TaskStatus status) {
+    var tempTasks = _tasks.value;
+    tempTasks.forEach((task) {
+      if (task.id.toString() == matchTask.group(2)) {
+        task.status = status;
+      }
+    });
+    prepareData(tempTasks);
+  }
+
+  _deleteTask(RegExpMatch matchTask) {
+    var tempTasks = _tasks.value;
+    for (Task task in tempTasks) {
+      if (task.id.toString() == matchTask.group(2)) {
+        tempTasks.remove(task);
+      }
+    }
+    prepareData(tempTasks);
+  }
+
   void prepareData(List<Task> newTasks) {
-    newTasks.sort((a, b) => a.header.compareTo(b.header)*-1);
+    newTasks.sort((a, b) => a.header.compareTo(b.header) * -1);
     _tasks.sink.add(newTasks);
   }
 
   var regTask = new RegExp(
-    r"^(t(?:ask)?)\s(@(?:\S*['-]?)(?:[0-9a-zA-Z'-]+))?(.*)",
+    r"^(c(?:reate)?)\s(@(?:\S*['-]?)(?:[0-9a-zA-Z'-]+))?(.*)",
     caseSensitive: false,
     multiLine: false,
   );
 
   var regCheck = new RegExp(
-    r"^(c(?:heck)?)\s(\d+)",
+    r"^(f(?:inish)?)\s(\d+)",
     caseSensitive: false,
     multiLine: false,
   );
 
   var regBegin = new RegExp(
-    r"^(b(?:egin)?)\s(\d+)",
+    r"^(p(?:rocess)?)\s(\d+)",
     caseSensitive: false,
     multiLine: false,
   );
@@ -102,9 +124,9 @@ class MainBloc extends Bloc {
     multiLine: false,
   );
 
-  Iterable<RegExpMatch> parseTaskCommand(String str) => regTask.allMatches(str);
-  Iterable<RegExpMatch> parseCheckCommand(String str) => regCheck.allMatches(str);
-  Iterable<RegExpMatch> parseBeginCommand(String str) => regBegin.allMatches(str);
-  Iterable<RegExpMatch> parseDeleteCommand(String str) => regDelete.allMatches(str);
-  Iterable<RegExpMatch> parseHelpCommand(String str) => regHelp.allMatches(str);
+  RegExpMatch parseTaskCommand(String str) => regTask.allMatches(str).first;
+  RegExpMatch parseCheckCommand(String str) => regCheck.allMatches(str).first;
+  RegExpMatch parseBeginCommand(String str) => regBegin.allMatches(str).first;
+  RegExpMatch parseDeleteCommand(String str) => regDelete.allMatches(str).first;
+  RegExpMatch parseHelpCommand(String str) => regHelp.allMatches(str).first;
 }

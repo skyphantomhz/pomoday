@@ -63,12 +63,19 @@ class _MyHomePageState extends State<MyHomePage> {
                       itemCount: tasks?.length ?? 0,
                       itemBuilder: (BuildContext context, int index) {
                         var task = tasks[index];
-                        if(currentHeader == task.header){
+                        if (currentHeader == task.header) {
                           return Container(
                             margin: EdgeInsets.only(left: 40),
-                            child: Text(
-                              "${task.id}. ${task.name}",
-                              style: TextStyle(fontSize: 15.0),
+                            child: Row(
+                              children: <Widget>[
+                                Status(
+                                  status: task.status,
+                                ),
+                                Text(
+                                  "${task.id}. ${task.name}",
+                                  style: TextStyle(fontSize: 15.0),
+                                ),
+                              ],
                             ),
                           );
                         }
@@ -88,9 +95,17 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               Container(
                                 margin: EdgeInsets.only(left: 40),
-                                child: Text(
-                                  "${task.id}. ${task.name}",
-                                  style: TextStyle(fontSize: 15.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Status(
+                                      status: task.status,
+                                    ),
+                                    Text(
+                                      "${task.id}. ${task.name}",
+                                      style: TextStyle(fontSize: 15.0),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -98,9 +113,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         } else {
                           return Container(
                             margin: EdgeInsets.only(left: 20),
-                            child: Text(
-                              "${task.id}. ${task.name}",
-                              style: TextStyle(fontSize: 15.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Status(
+                                  status: task.status,
+                                ),
+                                Text(
+                                  "${task.id}. ${task.name}",
+                                  style: TextStyle(fontSize: 15.0),
+                                ),
+                              ],
                             ),
                           );
                         }
@@ -131,5 +154,24 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+}
+
+class Status extends StatelessWidget {
+  final TaskStatus status;
+  const Status({Key key, this.status}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    switch (status) {
+      case TaskStatus.PROCESS:
+        return Icon(Icons.autorenew, color: Colors.yellow);
+        break;
+      case TaskStatus.DONE:
+        return Icon(Icons.check, color: Colors.green);
+        break;
+      default:
+        return Icon(Icons.check_box_outline_blank);
+    }
   }
 }
