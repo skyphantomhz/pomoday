@@ -12,7 +12,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        flutter-version: '1.9.1+hotfix.2'
     - name: Install dependencies
       run: flutter pub get
     - name: Run tests
       run: flutter pub run test
+    - name: Build apk
+      run: flutter build apk
