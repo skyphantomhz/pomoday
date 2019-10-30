@@ -1,4 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:pomoday/model/report.dart';
 import 'package:pomoday/model/task.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -9,10 +10,14 @@ class MainBloc extends Bloc {
   BehaviorSubject<List<Task>> _tasks = BehaviorSubject<List<Task>>();
   Observable<List<Task>> get tasks => _tasks.stream;
 
+  PublishSubject<Report> _report = PublishSubject<Report>();
+  Observable<Report> get report => _report.stream;
+
   @override
   void dispose() {
     _input.close();
     _tasks.close();
+    _report.close();
   }
 
   void parserCommand(String str) {
@@ -91,6 +96,20 @@ class MainBloc extends Bloc {
 
   void prepareData(List<Task> newTasks) {
     newTasks.sort((a, b) => a.header.compareTo(b.header) * -1);
+    var report = Report();
+    newTasks.forEach((task) {
+      switch (task.status) {
+        case TaskStatus.PROCESS:
+          report.processing++;
+          break;
+        case TaskStatus.DONE:
+          report.finish++;
+          break;
+        default:
+          report.waiting++;
+      }
+    });
+    _report.sink.add(report);
     _tasks.sink.add(newTasks);
   }
 

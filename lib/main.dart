@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:pomoday/di/locator.dart';
+import 'package:pomoday/model/report.dart';
 import 'package:pomoday/model/task.dart';
 
 import 'bloc/main_bloc.dart';
@@ -133,6 +134,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
+            StreamBuilder<Report>(
+              stream: bloc.report,
+              initialData: Report(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                Report report = snapshot.data;
+                return Text(
+                  "Waiting: ${report.waiting} Processing: ${report.processing} done: ${report.finish}",
+                  style: TextStyle(color: Colors.black54),
+                );
+              },
+            ),
             StreamBuilder<String>(
               stream: bloc.input,
               builder: (context, snapshot) {
@@ -165,7 +177,7 @@ class Status extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case TaskStatus.PROCESS:
-        return Icon(Icons.autorenew, color: Colors.yellow);
+        return Icon(Icons.autorenew);
         break;
       case TaskStatus.DONE:
         return Icon(Icons.check, color: Colors.green);
